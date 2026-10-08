@@ -1,18 +1,17 @@
 # language: Python, file: mix.py
 import aioimaplib
 
-# Known IMAP servers per domain
 DOMAIN_TO_IMAP = {
     "gmail.com":       ("imap.gmail.com", 993),
     "googlemail.com":  ("imap.gmail.com", 993),
     "outlook.com":     ("outlook.office365.com", 993),
-       "hotmail.com":     ("outlook.office365.com "",a 993),
+    "hotmail.com":     ("outlook.office365.com", 993),
     "live.com":        ("outlook.office365.com", 993),
     "msn.com":         ("outlook.office365.com", 993),
     "yahoo.com":       ("imap.mail.yahoo.com", 993),
     "ymail.com":       ("imap.mail.yahoo.com", 993),
     "rocketmail.com":  ("imap.mail.yahoo.com", 993),
-ol.com":         ("imap.aol.com", 993),
+    "aol.com":         ("imap.aol.com", 993),
     "aim.com":         ("imap.aol.com", 993),
     "yandex.com":      ("imap.yandex.com", 993),
     "yandex.ru":       ("imap.yandex.ru", 993),
@@ -27,8 +26,6 @@ ol.com":         ("imap.aol.com", 993),
     "icloud.com":      ("imap.mail.me.com", 993),
     "me.com":          ("imap.mail.me.com", 993),
     "mac.com":         ("imap.mail.me.com", 993),
-    "protonmail.com":  ("127.0.0.1", 1143),   # needs Proton Bridge
-    "proton.me":       ("127.0.0.1", 1143),
     "tutanota.com":    ("imap.tutanota.com", 993),
     "tuta.io":         ("imap.tutanota.com", 993),
     "fastmail.com":    ("imap.fastmail.com", 993),
@@ -97,9 +94,6 @@ ol.com":         ("imap.aol.com", 993),
     "sify.com":        ("imap.sify.com", 993),
 }
 
-# Port fallbacks to try if 993 fails
-FALLBACK_PORTS = [993, 143]
-
 def domain_of(email):
     return email.split("@", 1)[1].lower()
 
@@ -126,14 +120,12 @@ async def try_imap(host, port, user, pw, use_ssl=True):
 async def check(user, pw, proxies=None):
     dom = domain_of(user)
 
-    # 1) Known provider — try its server
     if dom in DOMAIN_TO_IMAP:
         host, port = DOMAIN_TO_IMAP[dom]
         r = await try_imap(host, port, user, pw, use_ssl=(port != 143))
         if r:
             return {"email": user, "password": pw, **r}
 
-    # 2) Guess common hostnames
     candidates = [
         (f"imap.{dom}", 993, True),
         (f"imap.{dom}", 143, False),
